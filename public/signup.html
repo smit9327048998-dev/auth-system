@@ -1,65 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup with SMIT OTP</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input[type="text"], input[type="password"], input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - OTP System</title>
 </head>
 <body>
-  <h2>Signup with  SMIT OTP</h2>
-  <form id="signupForm" action="/signup" method="POST">
-    <label for="userid">User ID:</label>
-    <input type="text" id="userid" name="userid" required />
+    <h2>Signup</h2>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required />
+    <form action="/signup" method="POST" onsubmit="return formatPhoneNumber()">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br><br>
 
-    <label for="phone">Phone Number:</label>
-    <input type="number" id="phone" name="phoneNumber" required />
+        <label for="phoneNumber">Phone Number (with country code):</label><br>
+        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+91XXXXXXXXXX" required><br><br>
 
-    <button type="submit">Send OTP</button>
-  </form>
+        <button type="submit">Send OTP</button>
+    </form>
 
-  <form id="otpForm" style="display:none;" action="/verifyOTP" method="POST">
-    <label for="otp">Enter OTP:</label>
-    <input type="number" id="otp" name="otp" required />
-    <button type="submit">Verify OTP</button>
-  </form>
+    <script>
+        function formatPhoneNumber() {
+            let phoneInput = document.getElementById("phoneNumber");
+            let phone = phoneInput.value.trim();
+
+            // Agar number "0" se start hota hai toh +91 lagao
+            if (phone.startsWith("0")) {
+                phone = "+91" + phone.substring(1);
+            }
+
+            // Agar "+" nahi hai toh default +91 lagao
+            if (!phone.startsWith("+")) {
+                phone = "+91" + phone;
+            }
+
+            phoneInput.value = phone;
+            return true;
+        }
+    </script>
 </body>
 </html>
