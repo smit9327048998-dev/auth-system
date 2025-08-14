@@ -2,100 +2,104 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
+    <title>Signup Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            background: #f0f0f0;
         }
         .signup-container {
             background: white;
-            padding: 20px 30px;
+            padding: 25px;
             border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
             width: 320px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        h2 {
-            text-align: center;
-        }
-        input {
+        input, button {
             width: 100%;
             padding: 10px;
-            margin: 8px 0;
-            border-radius: 5px;
+            margin-top: 8px;
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
         button {
-            width: 100%;
-            padding: 10px;
-            background: #4facfe;
-            border: none;
+            background: #28a745;
             color: white;
-            border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
+            border: none;
         }
-        button:hover {
-            background: #00c6fb;
-        }
-        p {
-            text-align: center;
-            margin-top: 10px;
-        }
-        a {
-            color: #4facfe;
-            text-decoration: none;
+        button:disabled {
+            background: #aaa;
         }
     </style>
-    <script>
-        function sendOTP() {
-            let mobile = document.getElementById("mobile").value;
-            let password = document.getElementById("password").value;
-            let confirmPassword = document.getElementById("confirmPassword").value;
-
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
-
-            if (!mobile.match(/^[0-9]{10}$/)) {
-                alert("Enter a valid 10 digit mobile number!");
-                return;
-            }
-
-            alert("OTP sent to " + mobile);
-            // Yaha backend call karke OTP bhejna hoga
-        }
-
-        function verifyOTP() {
-            let otp = document.getElementById("otp").value;
-            if (!otp.match(/^[0-9]{4,6}$/)) {
-                alert("Enter valid OTP!");
-                return;
-            }
-
-            alert("Account created successfully!");
-            // Yaha backend call karke OTP verify karna hoga
-        }
-    </script>
 </head>
 <body>
     <div class="signup-container">
-        <h2>Signup</h2>
+        <h2>Create Account</h2>
         <input type="text" id="username" placeholder="Username" required>
         <input type="password" id="password" placeholder="Password" required>
         <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-        <input type="tel" id="mobile" placeholder="Mobile Number" required>
-        <button type="button" onclick="sendOTP()">Send OTP</button>
-        <input type="text" id="otp" placeholder="Enter OTP">
-        <button type="button" onclick="verifyOTP()">Verify OTP</button>
-        <p>Already have an account? <a href="index.html">Login</a></p>
+        <input type="text" id="phone" placeholder="Mobile Number (+91...)" required>
+        <button onclick="sendOTP()">Send OTP</button>
+        <input type="text" id="otp" placeholder="Enter OTP" disabled>
+        <button onclick="verifyOTP()" id="verifyBtn" disabled>Verify OTP</button>
     </div>
+
+    <script>
+        function sendOTP() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const username = document.getElementById('username').value;
+
+            if (!username || !password || !confirmPassword || !phone) {
+                alert("Please fill all fields");
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            fetch("/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("OTP sent successfully!");
+                    document.getElementById("otp").disabled = false;
+                    document.getElementById("verifyBtn").disabled = false;
+                } else {
+                    alert("Failed to send OTP: " + data.message);
+                }
+            });
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+            const phone = document.getElementById('phone').value;
+
+            fetch("/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone, otp })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Account created successfully!");
+                } else {
+                    alert("OTP verification failed!");
+                }
+            });
+        }
+    </script>
 </body>
 </html>
