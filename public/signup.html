@@ -3,39 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup - OTP System</title>
+    <title>Signup with OTP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+            padding: 30px;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+    </style>
 </head>
 <body>
-    <h2>Signup</h2>
 
-    <form action="/signup" method="POST" onsubmit="return formatPhoneNumber()">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
+    <div class="container">
+        <h2>Signup</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="phoneNumber" placeholder="Phone Number" required>
+        <button onclick="sendOTP()">Send OTP</button>
 
-        <label for="phoneNumber">Phone Number (with country code):</label><br>
-        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+91XXXXXXXXXX" required><br><br>
+        <hr>
+        <input type="text" id="otp" placeholder="Enter OTP" required>
+        <button onclick="verifyOTP()">Verify OTP</button>
 
-        <button type="submit">Send OTP</button>
-    </form>
+        <p id="message" style="color:red;"></p>
+    </div>
 
     <script>
-        function formatPhoneNumber() {
-            let phoneInput = document.getElementById("phoneNumber");
-            let phone = phoneInput.value.trim();
+        async function sendOTP() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const phoneNumber = document.getElementById("phoneNumber").value.trim();
+            
+            const res = await fetch("/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `username=${username}&password=${password}&phoneNumber=${phoneNumber}`
+            });
+            
+            const msg = await res.text();
+            document.getElementById("message").innerText = msg;
+        }
 
-            // Agar number "0" se start hota hai toh +91 lagao
-            if (phone.startsWith("0")) {
-                phone = "+91" + phone.substring(1);
-            }
-
-            // Agar "+" nahi hai toh default +91 lagao
-            if (!phone.startsWith("+")) {
-                phone = "+91" + phone;
-            }
-
-            phoneInput.value = phone;
-            return true;
+        async function verifyOTP() {
+            const phoneNumber = document.getElementById("phoneNumber").value.trim();
+            const otp = document.getElementById("otp").value.trim();
+            
+            const res = await fetch("/verify-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `phoneNumber=${phoneNumber}&otp=${otp}`
+            });
+            
+            const msg = await res.text();
+            document.getElementById("message").innerText = msg;
         }
     </script>
+
 </body>
 </html>
