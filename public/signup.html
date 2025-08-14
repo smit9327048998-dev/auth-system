@@ -4,37 +4,156 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Background Animation */
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c0fe);
+      background-size: 400% 400%;
+      animation: gradientBG 8s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Glassmorphism Card */
+    .signup-box {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 350px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0,0,0,0.2);
+      animation: fadeIn 1s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Ripple Button Animation */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      color: black;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition: transform 0.5s, opacity 1s;
+    }
+    .btn:active::after {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 1;
+      transition: 0s;
+    }
+
+    .otp-section {
+      display: flex;
+      gap: 5px;
+    }
+    .otp-section input {
+      flex: 1;
+    }
+
+    .link {
+      margin-top: 15px;
+      display: block;
+      color: yellow;
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="signup-box">
+    <h2>Create Account</h2>
+    <form id="signupForm" action="/signup" method="POST">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+      
+      <div class="otp-section">
+        <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required>
+        <button type="button" class="btn" id="sendOtpBtn">Send OTP</button>
+      </div>
+      
+      <input type="text" name="otp" placeholder="Enter OTP" required>
+      <button type="submit" class="btn">Signup</button>
+    </form>
+
+    <a href="index.html" class="link">Already have an account? Login</a>
+  </div>
+
   <script>
-    async function sendOTP() {
-      const phone = document.getElementById("phone").value;
-      if (!phone.startsWith("+")) {
-        alert("Please include country code, e.g., +91xxxxxxxxxx");
+    document.getElementById("sendOtpBtn").addEventListener("click", async () => {
+      const phoneInput = document.querySelector('input[name="phone"]').value.trim();
+      if (!phoneInput.startsWith("+91") || phoneInput.length < 13) {
+        alert("Please enter phone number with country code (+91XXXXXXXXXX)");
         return;
       }
       const res = await fetch("/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone })
+        body: JSON.stringify({ phone: phoneInput })
       });
       const data = await res.json();
-      alert(data.message);
-    }
+      alert(data.message || "OTP sent!");
+    });
   </script>
-</head>
-<body>
-  <div class="container">
-    <h2>Sign Up</h2>
-    <form action="/signup" method="POST">
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-      <input type="text" id="phone" name="phone" placeholder="+91XXXXXXXXXX" required>
-      <button type="button" onclick="sendOTP()">Send OTP</button>
-      <input type="text" name="otp" placeholder="Enter OTP" required>
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="index.html">Login</a></p>
-  </div>
+
 </body>
 </html>
