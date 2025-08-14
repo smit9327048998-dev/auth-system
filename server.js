@@ -1,75 +1,56 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const dotenv = require("dotenv");
-const path = require("path");
-const twilio = require("twilio");
-
-dotenv.config();
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const path = require('path');
+const twilio = require('twilio');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Twilio Credentials from .env
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+
+if (!accountSid || !authToken || !twilioPhone) {
+    console.error("❌ Twilio credentials missing. Please check your .env file or hosting environment variables.");
+    process.exit(1);
+}
+
+const client = twilio(accountSid, authToken);
+
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Twilio Client
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
-let otpStore = {}; // { phone: otp }
-
-// Serve signup page
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "signup.html"));
+// Serve Signup Page
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
-// Send OTP
-app.post("/signup", async (req, res) => {
-    const phone = req.body.phone;
-    if (!phone) return res.status(400).send("Phone number required");
+// Handle OTP sending
+app.post('/send-otp', async (req, res) => {
+    const { phone } = req.body;
+
+    if (!phone) {
+        return res.status(400).send('Phone number is required.');
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-    otpStore[phone] = otp;
 
     try {
         await client.messages.create({
-            body: `Your OTP is ${otp}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
+            body: `Your OTP code is ${otp}`,
+            from: twilioPhone,
             to: phone
         });
-        res.send("OTP sent successfully");
+        res.send(`OTP sent successfully to ${phone}`);
     } catch (err) {
-        console.error("Error sending OTP:", err);
-        res.status(500).send("Failed to send OTP. Please try again.");
+        console.error("❌ Error sending OTP:", err.message);
+        res.status(500).send('Failed to send OTP. Please try again.');
     }
 });
 
-// Verify OTP
-app.post("/verify-otp", (req, res) => {
-    const { phone, otp } = req.body;
-    if (!phone || !otp) return res.status(400).send("Phone and OTP required");
-
-    if (otpStore[phone] && otpStore[phone].toString() === otp) {
-        delete otpStore[phone];
-        // OTP correct → redirect to index.html (login page)
-        res.redirect("/index.html");
-    } else {
-        res.status(400).send("Invalid OTP");
-    }
+app.listen(PORT, () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
 });
-
-// Serve login page (index.html)
-app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
-
-// Handle login (demo)
-app.post("/login", (req, res) => {
-    const { username, password } = req.body;
-    if (username === "admin" && password === "12345") {
-        res.send("Login successful!");
-    } else {
-        res.status(400).send("Invalid username or password");
-    }
-});
-
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
