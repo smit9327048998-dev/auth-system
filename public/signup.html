@@ -1,159 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup</title>
-  <style>
-    /* Background Animation */
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c0fe);
-      background-size: 400% 400%;
-      animation: gradientBG 8s ease infinite;
-    }
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-    /* Glassmorphism Card */
-    .signup-box {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(15px);
-      border-radius: 20px;
-      padding: 30px;
-      width: 350px;
-      color: white;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(0,0,0,0.2);
-      animation: fadeIn 1s ease forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+        .signup-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            animation: slideDown 0.8s ease;
+        }
 
-    h2 {
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-    }
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.8);
-    }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background: #f1f1f1;
+            font-size: 15px;
+            transition: 0.3s;
+        }
 
-    /* Ripple Button Animation */
-    .btn {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-      color: black;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s;
-    }
-    .btn:active {
-      transform: scale(0.97);
-    }
-    .btn::after {
-      content: '';
-      position: absolute;
-      background: rgba(255, 255, 255, 0.5);
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      opacity: 0;
-      transition: transform 0.5s, opacity 1s;
-    }
-    .btn:active::after {
-      transform: translate(-50%, -50%) scale(2);
-      opacity: 1;
-      transition: 0s;
-    }
+        input:focus {
+            background: #e0f7fa;
+            outline: none;
+            transform: scale(1.02);
+        }
 
-    .otp-section {
-      display: flex;
-      gap: 5px;
-    }
-    .otp-section input {
-      flex: 1;
-    }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-    .link {
-      margin-top: 15px;
-      display: block;
-      color: yellow;
-      text-decoration: none;
-    }
-    .link:hover {
-      text-decoration: underline;
-    }
-  </style>
+        button:hover {
+            transform: scale(1.05);
+            background: linear-gradient(90deg, #764ba2, #667eea);
+        }
+
+        .otp-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .otp-section input {
+            flex: 1;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
 
-  <div class="signup-box">
-    <h2>Create Account</h2>
-    <form id="signupForm" action="/signup" method="POST">
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
-      
-      <div class="otp-section">
-        <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required>
-        <button type="button" class="btn" id="sendOtpBtn">Send OTP</button>
-      </div>
-      
-      <input type="text" name="otp" placeholder="Enter OTP" required>
-      <button type="submit" class="btn">Signup</button>
-    </form>
+    <div class="signup-container">
+        <h2>Create Account</h2>
+        <form id="signupForm" action="/signup" method="POST">
+            <input type="text" name="username" placeholder="Enter username" required>
+            <input type="password" name="password" placeholder="Enter password" required>
+            <input type="password" name="confirmPassword" placeholder="Confirm password" required>
+            <div class="otp-section">
+                <input type="text" name="phone" placeholder="Enter mobile number" required>
+                <button type="button" id="sendOtpBtn">Send OTP</button>
+            </div>
+            <input type="text" name="otp" placeholder="Enter OTP" required>
+            <button type="submit">Sign Up</button>
+        </form>
+    </div>
 
-    <a href="index.html" class="link">Already have an account? Login</a>
-  </div>
+    <script>
+        document.getElementById("sendOtpBtn").addEventListener("click", function() {
+            const phone = document.querySelector("input[name='phone']").value;
+            if (!phone.startsWith("+91") || phone.length !== 13) {
+                alert("Phone number must include country code, e.g. +91XXXXXXXXXX");
+                return;
+            }
+            fetch("/send-otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message))
+            .catch(err => alert("Error sending OTP"));
+        });
 
-  <script>
-    document.getElementById("sendOtpBtn").addEventListener("click", async () => {
-      const phoneInput = document.querySelector('input[name="phone"]').value.trim();
-      if (!phoneInput.startsWith("+91") || phoneInput.length < 13) {
-        alert("Please enter phone number with country code (+91XXXXXXXXXX)");
-        return;
-      }
-      const res = await fetch("/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneInput })
-      });
-      const data = await res.json();
-      alert(data.message || "OTP sent!");
-    });
-  </script>
+        // Redirect to login after signup
+        document.getElementById("signupForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            fetch("/signup", {
+                method: "POST",
+                body: new FormData(this)
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location.href = "/index.html"; // Login page
+                } else {
+                    alert("Signup failed. Please try again.");
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
