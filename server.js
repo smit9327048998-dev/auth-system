@@ -1,59 +1,63 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
+const path = require("path");
 const twilio = require("twilio");
-require("dotenv").config();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+// Public folder static serve
+app.use(express.static(path.join(__dirname, "public")));
 
-const client = twilio(accountSid, authToken);
+// Twilio client
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// OTP store (sirf testing ke liye, real project me DB use karo)
 let otpStore = {};
 
-app.post("/send-otp", (req, res) => {
-    const { phone } = req.body;
-    if (!phone.startsWith("+")) {
-        return res.json({ message: "Phone number must include country code, e.g. +91xxxxxxxxxx" });
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    otpStore[phone] = otp;
-
-    client.messages
-        .create({
-            body: `Your OTP is ${otp}`,
-            from: twilioNumber,
-            to: phone
-        })
-        .then(() => {
-            res.json({ message: "OTP sent successfully" });
-        })
-        .catch(err => {
-            console.error(err);
-            res.json({ message: "Failed to send OTP. Please try again." });
-        });
+// GET signup page
+app.get("/signup", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "signup.html"));
 });
 
-app.post("/signup", (req, res) => {
-    const { username, password, phone, otp } = req.body;
+// Send OTP
+app.post("/send-otp", async (req, res) => {
+    try {
+        const { phone } = req.body;
 
-    if (!username || !password || !phone || !otp) {
-        return res.json({ message: "All fields are required" });
+        if (!phone || !phone.startsWith("+")) {
+            return res.status(400).send("Phone number must include country code, e.g. +91xxxxxxxxxx");
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        otpStore[phone] = otp;
+
+        await client.messages.create({
+            body: `Your OTP is ${otp}`,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: phone
+        });
+
+        res.status(200).send("OTP sent successfully!");
+    } catch (error) {
+        console.error("OTP send error:", error);
+        res.status(500).send("Failed to send OTP. Please try again.");
     }
+});
 
-    if (otpStore[phone] != otp) {
-        return res.json({ message: "Invalid OTP" });
+// Verify OTP
+app.post("/verify-otp", (req, res) => {
+    const { phone, otp } = req.body;
+
+    if (otpStore[phone] && otpStore[phone] == otp) {
+        delete otpStore[phone];
+        res.send("OTP verified successfully!");
+    } else {
+        res.status(400).send("Invalid OTP.");
     }
-
-    delete otpStore[phone];
-    res.json({ message: "Signup successful!" });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
