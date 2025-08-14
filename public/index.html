@@ -1,64 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login Page</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 50px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(120deg, #ff512f, #dd2476);
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .container {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        width: 350px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        animation: slideIn 0.8s ease-in-out;
     }
     h2 {
-      text-align: center;
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
     }
-    label {
-      display: block;
-      margin-top: 10px;
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        outline: none;
+        transition: 0.3s;
     }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
+    input:focus {
+        border-color: #ff512f;
+        box-shadow: 0 0 8px rgba(255, 81, 47, 0.4);
     }
     button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(120deg, #ff512f, #dd2476);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     button:hover {
-      background-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    .signup-link {
-      margin-top: 15px;
-      text-align: center;
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-  </style>
+</style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="loginForm" action="/login" method="POST">
-    <label for="userid">User ID:</label>
-    <input type="text" id="userid" name="userid" required />
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" name="username" placeholder="Enter username" required>
+            <input type="password" name="password" placeholder="Enter password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required />
-
-    <button type="submit">Login</button>
-  </form>
-  <div class="signup-link">
-    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-  </div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const res = await fetch('/login', {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+    });
+    alert(await res.text());
+});
+</script>
 </body>
 </html>

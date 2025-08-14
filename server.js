@@ -1,76 +1,75 @@
-require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 const path = require("path");
 const twilio = require("twilio");
 
+dotenv.config();
+
 const app = express();
-const port = process.env.PORT || 3000;
-
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname)));
 
+// Twilio Client
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// Signup route (Send OTP)
+let otpStore = {}; // { phone: otp }
+
+// Serve signup page
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "signup.html"));
+});
+
+// Send OTP
 app.post("/signup", async (req, res) => {
+    const phone = req.body.phone;
+    if (!phone) return res.status(400).send("Phone number required");
+
+    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+    otpStore[phone] = otp;
+
     try {
-        let { username, password, phoneNumber } = req.body;
-
-        if (!username || !password || !phoneNumber) {
-            return res.status(400).send("User ID, password, and phone number are required");
-        }
-
-        // Format phone number
-        phoneNumber = phoneNumber.trim();
-        if (!phoneNumber.startsWith("+")) {
-            phoneNumber = "+91" + phoneNumber; // Default India code
-        }
-
-        // Send OTP using Twilio Verify
-        const verification = await client.verify.v2
-            .services(process.env.TWILIO_VERIFY_SERVICE_SID)
-            .verifications
-            .create({ to: phoneNumber, channel: "sms" });
-
-        console.log(`OTP sent to ${phoneNumber}:`, verification.status);
-        res.send(`OTP sent to ${phoneNumber}`);
-    } catch (error) {
-        console.error("Error sending OTP:", error);
+        await client.messages.create({
+            body: `Your OTP is ${otp}`,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: phone
+        });
+        res.send("OTP sent successfully");
+    } catch (err) {
+        console.error("Error sending OTP:", err);
         res.status(500).send("Failed to send OTP. Please try again.");
     }
 });
 
-// Verify OTP route
-app.post("/verify-otp", async (req, res) => {
-    try {
-        let { phoneNumber, otp } = req.body;
+// Verify OTP
+app.post("/verify-otp", (req, res) => {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) return res.status(400).send("Phone and OTP required");
 
-        if (!phoneNumber || !otp) {
-            return res.status(400).send("Phone number and OTP are required");
-        }
-
-        phoneNumber = phoneNumber.trim();
-        if (!phoneNumber.startsWith("+")) {
-            phoneNumber = "+91" + phoneNumber;
-        }
-
-        const verificationCheck = await client.verify.v2
-            .services(process.env.TWILIO_VERIFY_SERVICE_SID)
-            .verificationChecks
-            .create({ to: phoneNumber, code: otp });
-
-        if (verificationCheck.status === "approved") {
-            res.send("OTP verified successfully!");
-        } else {
-            res.status(400).send("Invalid OTP. Please try again.");
-        }
-    } catch (error) {
-        console.error("Error verifying OTP:", error);
-        res.status(500).send("Failed to verify OTP. Please try again.");
+    if (otpStore[phone] && otpStore[phone].toString() === otp) {
+        delete otpStore[phone];
+        // OTP correct → redirect to index.html (login page)
+        res.redirect("/index.html");
+    } else {
+        res.status(400).send("Invalid OTP");
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+// Serve login page (index.html)
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
 });
+
+// Handle login (demo)
+app.post("/login", (req, res) => {
+    const { username, password } = req.body;
+    if (username === "admin" && password === "12345") {
+        res.send("Login successful!");
+    } else {
+        res.status(400).send("Invalid username or password");
+    }
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
