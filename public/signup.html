@@ -1,45 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup with OTP</title>
+    <title>Signup</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; }
+        input { padding: 10px; margin: 5px; width: 250px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+    </style>
 </head>
 <body>
     <h2>Signup</h2>
     <form id="signupForm">
-        <label>Username:</label>
-        <input type="text" id="username" required><br><br>
-
-        <label>Password:</label>
-        <input type="password" id="password" required><br><br>
-
-        <label>Confirm Password:</label>
-        <input type="password" id="confirmPassword" required><br><br>
-
-        <label>Mobile Number (+91xxxxxxxxxx):</label>
-        <input type="text" id="phone" required><br><br>
-
-        <button type="button" id="sendOtpBtn">Send OTP</button><br><br>
-
-        <label>Enter OTP:</label>
-        <input type="text" id="otp"><br><br>
-
+        <input type="text" id="username" placeholder="Username" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required><br>
+        <input type="text" id="phone" placeholder="Phone Number (with country code)" required><br>
+        <button type="button" id="sendOtpBtn">Send OTP</button><br>
+        <input type="text" id="otp" placeholder="Enter OTP"><br>
         <button type="submit">Signup</button>
     </form>
-
-    <p id="message"></p>
 
     <script>
         document.getElementById("sendOtpBtn").addEventListener("click", async () => {
             const phone = document.getElementById("phone").value;
+            if (!phone.startsWith("+")) {
+                alert("Phone number must include country code, e.g. +91xxxxxxxxxx");
+                return;
+            }
+
             const res = await fetch("/send-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ phone })
             });
-            const data = await res.json();
-            document.getElementById("message").innerText = data.message;
+
+            const text = await res.text();
+            alert(text);
         });
 
         document.getElementById("signupForm").addEventListener("submit", async (e) => {
@@ -51,17 +47,18 @@
             const otp = document.getElementById("otp").value;
 
             if (password !== confirmPassword) {
-                alert("Passwords do not match");
+                alert("Passwords do not match!");
                 return;
             }
 
-            const res = await fetch("/signup", {
+            const res = await fetch("/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, phone, otp })
+                body: JSON.stringify({ phone, otp })
             });
-            const data = await res.json();
-            alert(data.message);
+
+            const text = await res.text();
+            alert(text);
         });
     </script>
 </body>
