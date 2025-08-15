@@ -1,50 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="hi">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Smit Shop</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
-  *{box-sizing:border-box}
-  body{
-    margin:0; min-height:100vh; display:grid; place-items:center; text-align:center;
-    font-family:'Poppins',sans-serif; color:#fff;
-    background:linear-gradient(-45deg,#a18cd1,#fbc2eb,#fad0c4,#ffd1ff);
-    background-size:400% 400%; animation:bg 10s ease infinite;
-  }
-  @keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
-  .wrap{background:rgba(255,255,255,.18);backdrop-filter:blur(14px);padding:28px 34px;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.18);animation:fade .8s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  h1{margin:0 0 8px; font-size:32px}
-  .sub{opacity:.9;margin-bottom:18px}
-  .btn{padding:10px 16px;border:none;border-radius:14px;background:linear-gradient(90deg,#ff758c,#ff7eb3);color:#fff;font-weight:700;cursor:pointer;transition:.2s}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(255,126,179,.35)}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Smit Shop • Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="wrap">
-  <h1>Welcome to Smit Shop</h1>
-  <div class="sub">Hi <span id="uname">User</span> 👋 — you are logged in.</div>
-  <button class="btn" id="logoutBtn">Logout</button>
-</div>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">🛍️ Smit Shop</div>
+    <div class="search-wrap">
+      <input id="searchInput" type="text" placeholder="Product dhundo…">
+    </div>
+    <div class="actions">
+      <button id="cartOpenBtn" class="btn icon" title="Cart">🛒 <span id="cartBadge" class="badge">0</span></button>
+      <button id="menuBtn" class="btn icon" title="Menu">☰</button>
+    </div>
+  </header>
 
-<script>
-  // Guard: if not logged in, kick to login
-  (async ()=>{
-    try{
-      const r = await fetch('/api/session');
-      const d = await r.json();
-      if(!d.loggedIn) location.href='/index.html';
-      else document.getElementById('uname').textContent = d.username || 'User';
-    }catch{
-      location.href='/index.html';
-    }
-  })();
+  <!-- Right Drawer -->
+  <aside id="drawer" class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">Menu</div>
+      <button id="drawerClose" class="btn icon">✕</button>
+    </div>
+    <nav class="drawer-nav">
+      <button class="drawer-link" data-open="profile">👤 Profile</button>
+      <button class="drawer-link" data-open="orders">📦 Orders</button>
+      <button class="drawer-link" data-open="cart">🛒 Cart</button>
+      <button class="drawer-link" data-open="support">💬 Customer Service</button>
+      <button id="logoutBtn" class="drawer-link danger">🚪 Logout</button>
+    </nav>
+  </aside>
+  <div id="backdrop" class="backdrop"></div>
 
-  document.getElementById('logoutBtn').addEventListener('click', async ()=>{
-    await fetch('/logout',{method:'POST'});
-    location.href='/index.html';
-  });
-</script>
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Colorful Deals, Smooth Vibes ✨</h1>
+    <p>Pasand karo, add karo, turant checkout.</p>
+    <a href="#products" class="btn primary">Browse</a>
+  </section>
+
+  <!-- Products -->
+  <main id="products" class="container">
+    <div class="toolbar">
+      <div class="filter-tabs">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="electronics">Electronics</button>
+        <button class="chip" data-filter="fashion">Fashion</button>
+        <button class="chip" data-filter="home">Home</button>
+      </div>
+      <div class="sort">
+        <label>Sort:</label>
+        <select id="sortSelect">
+          <option value="pop">Popular</option>
+          <option value="low">Price: Low → High</option>
+          <option value="high">Price: High → Low</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <!-- Cart Panel -->
+  <section id="cartPanel" class="panel">
+    <div class="panel-header">
+      <h2>Cart</h2>
+      <button class="btn icon panel-close" data-close="cart">✕</button>
+    </div>
+    <div id="cartItems" class="panel-body"></div>
+    <div class="panel-footer">
+      <div class="totals">
+        <div>Subtotal:</div><div id="cartSubtotal">₹0</div>
+      </div>
+      <button id="checkoutBtn" class="btn primary block">Checkout</button>
+    </div>
+  </section>
+
+  <!-- Orders Panel -->
+  <section id="ordersPanel" class="panel">
+    <div class="panel-header">
+      <h2>Orders</h2>
+      <button class="btn icon panel-close" data-close="orders">✕</button>
+    </div>
+    <div id="ordersBody" class="panel-body"></div>
+  </section>
+
+  <!-- Profile Panel -->
+  <section id="profilePanel" class="panel">
+    <div class="panel-header">
+      <h2>Profile</h2>
+      <button class="btn icon panel-close" data-close="profile">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="profile">
+        <img id="avatarPreview" class="avatar" alt="Avatar">
+        <div>
+          <label class="btn outline">
+            Photo Upload
+            <input id="avatarInput" type="file" accept="image/*" hidden>
+          </label>
+        </div>
+      </div>
+
+      <div class="form">
+        <label>Naam</label>
+        <input id="profileName" type="text" placeholder="Apna naam">
+
+        <label>Phone</label>
+        <input id="profilePhone" type="tel" placeholder="+91XXXXXXXXXX">
+
+        <label>Default Address</label>
+        <textarea id="profileAddress" rows="3" placeholder="Ghar no, Street, City, State, Pincode"></textarea>
+
+        <button id="saveProfileBtn" class="btn primary">Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Support Panel -->
+  <section id="supportPanel" class="panel">
+    <div class="panel-header">
+      <h2>Customer Service</h2>
+      <button class="btn icon panel-close" data-close="support">✕</button>
+    </div>
+    <div class="panel-body">
+      <p>Help chahiye? WhatsApp ya Email par ping karo.</p>
+      <div class="support-actions">
+        <a class="btn outline block" href="https://wa.me/919999999999" target="_blank">WhatsApp</a>
+        <a class="btn outline block" href="mailto:support@smitshop.example">Email</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Checkout -->
+  <section id="checkoutPanel" class="panel">
+    <div class="panel-header">
+      <h2>Checkout</h2>
+      <button class="btn icon panel-close" data-close="checkout">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="form">
+        <label>Delivery Address</label>
+        <textarea id="checkoutAddress" rows="3" placeholder="Profile address use karo ya yahan likho"></textarea>
+
+        <label>Order Note (optional)</label>
+        <input id="checkoutNote" type="text" placeholder="Koi instruction?">
+
+        <div class="summary">
+          <div>Items total</div><div id="checkoutSubtotal">₹0</div>
+          <div>Delivery</div><div>₹0</div>
+          <div class="bold">Grand total</div><div id="checkoutGrand">₹0</div>
+        </div>
+
+        <button id="placeOrderBtn" class="btn primary block">Order Submit</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
 </body>
 </html>
